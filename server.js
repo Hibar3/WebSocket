@@ -1,53 +1,54 @@
+//******MAIN Server******//
+var port= 4000;
+const express = require('express'),
+http = require('http'),
+app = express(),
+server = http.createServer(app),
+io = require('socket.io').listen(server);
+app.get('/', (req, res) => {
 
+res.send('Server is running on port'  + port)
+});
+io.on('connection', (socket) => {
 
-var http = require('http');
-var express = require('express');
-var SSE = require('sse');
+console.log('user connected', socket.id)
+var ID = socket.id
 
-var app = express().use(express.static('public'));
-var server = http.createServer(app);
-var clients = [];
+socket.on('join', function(userNickname) {
 
-server.listen(8080, '127.0.0.1', function() {
-  var sse = new SSE(server);
-
-  sse.on('connection', function(stream) {
-    clients.push(stream);
-    console.log('Opened connection 🎉');
-
-    var json = JSON.stringify({ message: 'Gotcha' });
-    stream.send(json);
-    console.log('Sent: ' + json);
-
-    stream.on('close', function() {
-      clients.splice(clients.indexOf(stream), 1);
-      console.log('Closed connection 😱');
+        console.log(userNickname+" : has connected to web server "  + ID );
+		//userjoinedthechat is from android 
+        socket.broadcast.emit('userjoinedthechat', userNickname +" : has joined the server");
     });
-  });
+
+
+socket.on('messagedetection', (senderNickname,messageContent) => {
+       
+       //log the message in console 
+
+       console.log(senderNickname+" :" +messageContent)
+        //create a message object 
+       let  message = {"message":messageContent, "senderNickname":senderNickname}
+          // send the message to the client side  
+       io.emit('message', message );
+     
+      });
+      
+  
+ socket.on('disconnect', function() {
+    console.log( ' user has left ')
+    socket.broadcast.emit("userdisconnect"," user has left ") 
+
 });
 
-var broadcast = function() {
-  var json = JSON.stringify({ message: 'Hello hello!' });
+});
 
-  clients.forEach(function(stream) {
-    stream.send(json);
-    console.log('Sent: ' + json);
-  });
-}
-setInterval(broadcast, 3000)
 
-// can receive from the client with standard http and broadcast
 
-var bodyParser = require('body-parser')
-app.use(bodyParser.json())
-app.post('/api', function(req, res) {
-  var message = JSON.stringify(req.body);
-  console.log('Received: ' + message);
-  res.status(200).end();
+//use default IP address
 
-  var json = JSON.stringify({ message: 'Something changed' });
-  clients.forEach(function(stream) {
-    stream.send(json);
-    console.log('Sent: ' + json);
-  });
-})
+server.listen(4000,()=>{
+
+console.log('Node app is running on port ' + port);
+
+});
