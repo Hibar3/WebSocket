@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title></title>
+  </head>
+  <body>
+  
+	<!-- Include jquery, cookies, socket.io (client-side) and your own code -->
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+    <script src="https://unpkg.com/cookie_js@1.2.2/cookie.min.js"></script>
+    <script src="https://unpkg.com/socket.io-client@2/dist/socket.io.slim.js"></script>
+	
+	
+    <h1>
+      Node Message
+    </h1>
+    <ul id="log"></ul>
+	
+	<div id="history"></div>
+    <form id="chat">
+        <input type="text" id="msg_text" name="msg_text" />
+       
+    </form>
+    <script type="text/javascript" src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+    <script type="text/javascript" src="server.js"></script>
+    <script type="text/javascript">
+        var socket = io.connect();
+
+       
+		socket.on("message", function(msg){
+		var final_message = $("<p />").text(msg);
+		   $("#history").append(final_message);
+		});
+    </script>
+	
+  </body>
+</html>
